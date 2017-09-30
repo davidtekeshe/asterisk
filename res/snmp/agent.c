@@ -50,6 +50,9 @@
 #ifndef HAVE_DMALLOC_H
 #define HAVE_DMALLOC_H 0	/* XXX we shouldn't do this */
 #endif
+#ifndef RONLY
+#define RONLY 1
+#endif
 
 #if defined(__OpenBSD__)
 /*

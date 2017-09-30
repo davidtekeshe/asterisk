@@ -1211,6 +1211,18 @@ PBX_BFD
 BFD_DIR
 BFD_INCLUDE
 BFD_LIB
+PBX_AMR_WB_ENCODER
+AMR_WB_ENCODER_DIR
+AMR_WB_ENCODER_INCLUDE
+AMR_WB_ENCODER_LIB
+PBX_AMR_WB_DECODER
+AMR_WB_DECODER_DIR
+AMR_WB_DECODER_INCLUDE
+AMR_WB_DECODER_LIB
+PBX_AMR_NB
+AMR_NB_DIR
+AMR_NB_INCLUDE
+AMR_NB_LIB
 PBX_ALSA
 ALSA_DIR
 ALSA_INCLUDE
@@ -1388,6 +1400,9 @@ with_externals_cache
 enable_coverage
 with_pjproject_bundled
 with_asound
+with_opencore_amrnb
+with_opencore_amrwb
+with_vo_amrwbenc
 with_bfd
 with_execinfo
 with_bluetooth
@@ -2140,6 +2155,14 @@ Optional Packages:
   --with-pjproject-bundled
                           Use bundled pjproject libraries (default)
   --with-asound=PATH      use Advanced Linux Sound Architecture files in PATH
+  --with-opencore-amrnb=PATH
+                          use AMR Audio Codec (Narrowband) Decoder/Encoder
+                          files in PATH
+  --with-opencore-amrwb=PATH
+                          use AMR-WB Audio Codec (Wideband) Decoder files in
+                          PATH
+  --with-vo-amrwbenc=PATH use AMR-WB Audio Codec (Wideband) Encoder files in
+                          PATH
   --with-bfd=PATH         use Debug symbol decoding files in PATH
   --with-execinfo=PATH    use Stack Backtrace files in PATH
   --with-bluetooth=PATH   use Bluetooth files in PATH
@@ -9454,6 +9477,102 @@ if test "${with_asound+set}" = set; then :
 	*)
 	ALSA_DIR="${withval}"
 	ac_mandatory_list="${ac_mandatory_list} ALSA"
+	;;
+	esac
+
+fi
+
+
+
+
+
+
+
+
+    AMR_NB_DESCRIP="AMR Audio Codec (Narrowband) Decoder/Encoder"
+    AMR_NB_OPTION="opencore-amrnb"
+    PBX_AMR_NB=0
+
+# Check whether --with-opencore-amrnb was given.
+if test "${with_opencore_amrnb+set}" = set; then :
+  withval=$with_opencore_amrnb;
+	case ${withval} in
+	n|no)
+	USE_AMR_NB=no
+	# -1 is a magic value used by menuselect to know that the package
+	# was disabled, other than 'not found'
+	PBX_AMR_NB=-1
+	;;
+	y|ye|yes)
+	ac_mandatory_list="${ac_mandatory_list} AMR_NB"
+	;;
+	*)
+	AMR_NB_DIR="${withval}"
+	ac_mandatory_list="${ac_mandatory_list} AMR_NB"
+	;;
+	esac
+
+fi
+
+
+
+
+
+
+
+
+    AMR_WB_DECODER_DESCRIP="AMR-WB Audio Codec (Wideband) Decoder"
+    AMR_WB_DECODER_OPTION="opencore-amrwb"
+    PBX_AMR_WB_DECODER=0
+
+# Check whether --with-opencore-amrwb was given.
+if test "${with_opencore_amrwb+set}" = set; then :
+  withval=$with_opencore_amrwb;
+	case ${withval} in
+	n|no)
+	USE_AMR_WB_DECODER=no
+	# -1 is a magic value used by menuselect to know that the package
+	# was disabled, other than 'not found'
+	PBX_AMR_WB_DECODER=-1
+	;;
+	y|ye|yes)
+	ac_mandatory_list="${ac_mandatory_list} AMR_WB_DECODER"
+	;;
+	*)
+	AMR_WB_DECODER_DIR="${withval}"
+	ac_mandatory_list="${ac_mandatory_list} AMR_WB_DECODER"
+	;;
+	esac
+
+fi
+
+
+
+
+
+
+
+
+    AMR_WB_ENCODER_DESCRIP="AMR-WB Audio Codec (Wideband) Encoder"
+    AMR_WB_ENCODER_OPTION="vo-amrwbenc"
+    PBX_AMR_WB_ENCODER=0
+
+# Check whether --with-vo-amrwbenc was given.
+if test "${with_vo_amrwbenc+set}" = set; then :
+  withval=$with_vo_amrwbenc;
+	case ${withval} in
+	n|no)
+	USE_AMR_WB_ENCODER=no
+	# -1 is a magic value used by menuselect to know that the package
+	# was disabled, other than 'not found'
+	PBX_AMR_WB_ENCODER=-1
+	;;
+	y|ye|yes)
+	ac_mandatory_list="${ac_mandatory_list} AMR_WB_ENCODER"
+	;;
+	*)
+	AMR_WB_ENCODER_DIR="${withval}"
+	ac_mandatory_list="${ac_mandatory_list} AMR_WB_ENCODER"
 	;;
 	esac
 
@@ -20205,6 +20324,319 @@ fi
 
 
 
+if test "x${PBX_AMR_NB}" != "x1" -a "${USE_AMR_NB}" != "no"; then
+   pbxlibdir=""
+   # if --with-AMR_NB=DIR has been specified, use it.
+   if test "x${AMR_NB_DIR}" != "x"; then
+      if test -d ${AMR_NB_DIR}/lib; then
+         pbxlibdir="-L${AMR_NB_DIR}/lib"
+      else
+         pbxlibdir="-L${AMR_NB_DIR}"
+      fi
+   fi
+   pbxfuncname="Encoder_Interface_init"
+   if test "x${pbxfuncname}" = "x" ; then   # empty lib, assume only headers
+      AST_AMR_NB_FOUND=yes
+   else
+      ast_ext_lib_check_save_CFLAGS="${CFLAGS}"
+      CFLAGS="${CFLAGS} "
+      as_ac_Lib=`$as_echo "ac_cv_lib_opencore-amrnb_${pbxfuncname}" | $as_tr_sh`
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for ${pbxfuncname} in -lopencore-amrnb" >&5
+$as_echo_n "checking for ${pbxfuncname} in -lopencore-amrnb... " >&6; }
+if eval \${$as_ac_Lib+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+  ac_check_lib_save_LIBS=$LIBS
+LIBS="-lopencore-amrnb ${pbxlibdir}  $LIBS"
+cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+/* Override any GCC internal prototype to avoid an error.
+   Use char because int might match the return type of a GCC
+   builtin and then its argument prototype would still apply.  */
+#ifdef __cplusplus
+extern "C"
+#endif
+char ${pbxfuncname} ();
+int
+main ()
+{
+return ${pbxfuncname} ();
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_link "$LINENO"; then :
+  eval "$as_ac_Lib=yes"
+else
+  eval "$as_ac_Lib=no"
+fi
+rm -f core conftest.err conftest.$ac_objext \
+    conftest$ac_exeext conftest.$ac_ext
+LIBS=$ac_check_lib_save_LIBS
+fi
+eval ac_res=\$$as_ac_Lib
+	       { $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_res" >&5
+$as_echo "$ac_res" >&6; }
+if eval test \"x\$"$as_ac_Lib"\" = x"yes"; then :
+  AST_AMR_NB_FOUND=yes
+else
+  AST_AMR_NB_FOUND=no
+fi
+
+      CFLAGS="${ast_ext_lib_check_save_CFLAGS}"
+   fi
+
+   # now check for the header.
+   if test "${AST_AMR_NB_FOUND}" = "yes"; then
+      AMR_NB_LIB="${pbxlibdir} -lopencore-amrnb "
+      # if --with-AMR_NB=DIR has been specified, use it.
+      if test "x${AMR_NB_DIR}" != "x"; then
+         AMR_NB_INCLUDE="-I${AMR_NB_DIR}/include"
+      fi
+      AMR_NB_INCLUDE="${AMR_NB_INCLUDE} "
+      if test "xopencore-amrnb/interf_enc.h" = "x" ; then	# no header, assume found
+         AMR_NB_HEADER_FOUND="1"
+      else				# check for the header
+         ast_ext_lib_check_saved_CPPFLAGS="${CPPFLAGS}"
+         CPPFLAGS="${CPPFLAGS} ${AMR_NB_INCLUDE}"
+         ac_fn_c_check_header_mongrel "$LINENO" "opencore-amrnb/interf_enc.h" "ac_cv_header_opencore_amrnb_interf_enc_h" "$ac_includes_default"
+if test "x$ac_cv_header_opencore_amrnb_interf_enc_h" = xyes; then :
+  AMR_NB_HEADER_FOUND=1
+else
+  AMR_NB_HEADER_FOUND=0
+fi
+
+
+         CPPFLAGS="${ast_ext_lib_check_saved_CPPFLAGS}"
+      fi
+      if test "x${AMR_NB_HEADER_FOUND}" = "x0" ; then
+         AMR_NB_LIB=""
+         AMR_NB_INCLUDE=""
+      else
+         if test "x${pbxfuncname}" = "x" ; then		# only checking headers -> no library
+            AMR_NB_LIB=""
+         fi
+         PBX_AMR_NB=1
+         cat >>confdefs.h <<_ACEOF
+#define HAVE_AMR_NB 1
+_ACEOF
+
+      fi
+   fi
+fi
+
+
+
+if test "x${PBX_AMR_WB_DECODER}" != "x1" -a "${USE_AMR_WB_DECODER}" != "no"; then
+   pbxlibdir=""
+   # if --with-AMR_WB_DECODER=DIR has been specified, use it.
+   if test "x${AMR_WB_DECODER_DIR}" != "x"; then
+      if test -d ${AMR_WB_DECODER_DIR}/lib; then
+         pbxlibdir="-L${AMR_WB_DECODER_DIR}/lib"
+      else
+         pbxlibdir="-L${AMR_WB_DECODER_DIR}"
+      fi
+   fi
+   pbxfuncname="D_IF_init"
+   if test "x${pbxfuncname}" = "x" ; then   # empty lib, assume only headers
+      AST_AMR_WB_DECODER_FOUND=yes
+   else
+      ast_ext_lib_check_save_CFLAGS="${CFLAGS}"
+      CFLAGS="${CFLAGS} "
+      as_ac_Lib=`$as_echo "ac_cv_lib_opencore-amrwb_${pbxfuncname}" | $as_tr_sh`
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for ${pbxfuncname} in -lopencore-amrwb" >&5
+$as_echo_n "checking for ${pbxfuncname} in -lopencore-amrwb... " >&6; }
+if eval \${$as_ac_Lib+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+  ac_check_lib_save_LIBS=$LIBS
+LIBS="-lopencore-amrwb ${pbxlibdir}  $LIBS"
+cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+/* Override any GCC internal prototype to avoid an error.
+   Use char because int might match the return type of a GCC
+   builtin and then its argument prototype would still apply.  */
+#ifdef __cplusplus
+extern "C"
+#endif
+char ${pbxfuncname} ();
+int
+main ()
+{
+return ${pbxfuncname} ();
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_link "$LINENO"; then :
+  eval "$as_ac_Lib=yes"
+else
+  eval "$as_ac_Lib=no"
+fi
+rm -f core conftest.err conftest.$ac_objext \
+    conftest$ac_exeext conftest.$ac_ext
+LIBS=$ac_check_lib_save_LIBS
+fi
+eval ac_res=\$$as_ac_Lib
+	       { $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_res" >&5
+$as_echo "$ac_res" >&6; }
+if eval test \"x\$"$as_ac_Lib"\" = x"yes"; then :
+  AST_AMR_WB_DECODER_FOUND=yes
+else
+  AST_AMR_WB_DECODER_FOUND=no
+fi
+
+      CFLAGS="${ast_ext_lib_check_save_CFLAGS}"
+   fi
+
+   # now check for the header.
+   if test "${AST_AMR_WB_DECODER_FOUND}" = "yes"; then
+      AMR_WB_DECODER_LIB="${pbxlibdir} -lopencore-amrwb "
+      # if --with-AMR_WB_DECODER=DIR has been specified, use it.
+      if test "x${AMR_WB_DECODER_DIR}" != "x"; then
+         AMR_WB_DECODER_INCLUDE="-I${AMR_WB_DECODER_DIR}/include"
+      fi
+      AMR_WB_DECODER_INCLUDE="${AMR_WB_DECODER_INCLUDE} "
+      if test "xopencore-amrwb/dec_if.h" = "x" ; then	# no header, assume found
+         AMR_WB_DECODER_HEADER_FOUND="1"
+      else				# check for the header
+         ast_ext_lib_check_saved_CPPFLAGS="${CPPFLAGS}"
+         CPPFLAGS="${CPPFLAGS} ${AMR_WB_DECODER_INCLUDE}"
+         ac_fn_c_check_header_mongrel "$LINENO" "opencore-amrwb/dec_if.h" "ac_cv_header_opencore_amrwb_dec_if_h" "$ac_includes_default"
+if test "x$ac_cv_header_opencore_amrwb_dec_if_h" = xyes; then :
+  AMR_WB_DECODER_HEADER_FOUND=1
+else
+  AMR_WB_DECODER_HEADER_FOUND=0
+fi
+
+
+         CPPFLAGS="${ast_ext_lib_check_saved_CPPFLAGS}"
+      fi
+      if test "x${AMR_WB_DECODER_HEADER_FOUND}" = "x0" ; then
+         AMR_WB_DECODER_LIB=""
+         AMR_WB_DECODER_INCLUDE=""
+      else
+         if test "x${pbxfuncname}" = "x" ; then		# only checking headers -> no library
+            AMR_WB_DECODER_LIB=""
+         fi
+         PBX_AMR_WB_DECODER=1
+         cat >>confdefs.h <<_ACEOF
+#define HAVE_AMR_WB_DECODER 1
+_ACEOF
+
+      fi
+   fi
+fi
+
+
+
+if test "x${PBX_AMR_WB_ENCODER}" != "x1" -a "${USE_AMR_WB_ENCODER}" != "no"; then
+   pbxlibdir=""
+   # if --with-AMR_WB_ENCODER=DIR has been specified, use it.
+   if test "x${AMR_WB_ENCODER_DIR}" != "x"; then
+      if test -d ${AMR_WB_ENCODER_DIR}/lib; then
+         pbxlibdir="-L${AMR_WB_ENCODER_DIR}/lib"
+      else
+         pbxlibdir="-L${AMR_WB_ENCODER_DIR}"
+      fi
+   fi
+   pbxfuncname="E_IF_init"
+   if test "x${pbxfuncname}" = "x" ; then   # empty lib, assume only headers
+      AST_AMR_WB_ENCODER_FOUND=yes
+   else
+      ast_ext_lib_check_save_CFLAGS="${CFLAGS}"
+      CFLAGS="${CFLAGS} "
+      as_ac_Lib=`$as_echo "ac_cv_lib_vo-amrwbenc_${pbxfuncname}" | $as_tr_sh`
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for ${pbxfuncname} in -lvo-amrwbenc" >&5
+$as_echo_n "checking for ${pbxfuncname} in -lvo-amrwbenc... " >&6; }
+if eval \${$as_ac_Lib+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+  ac_check_lib_save_LIBS=$LIBS
+LIBS="-lvo-amrwbenc ${pbxlibdir}  $LIBS"
+cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+/* Override any GCC internal prototype to avoid an error.
+   Use char because int might match the return type of a GCC
+   builtin and then its argument prototype would still apply.  */
+#ifdef __cplusplus
+extern "C"
+#endif
+char ${pbxfuncname} ();
+int
+main ()
+{
+return ${pbxfuncname} ();
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_link "$LINENO"; then :
+  eval "$as_ac_Lib=yes"
+else
+  eval "$as_ac_Lib=no"
+fi
+rm -f core conftest.err conftest.$ac_objext \
+    conftest$ac_exeext conftest.$ac_ext
+LIBS=$ac_check_lib_save_LIBS
+fi
+eval ac_res=\$$as_ac_Lib
+	       { $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_res" >&5
+$as_echo "$ac_res" >&6; }
+if eval test \"x\$"$as_ac_Lib"\" = x"yes"; then :
+  AST_AMR_WB_ENCODER_FOUND=yes
+else
+  AST_AMR_WB_ENCODER_FOUND=no
+fi
+
+      CFLAGS="${ast_ext_lib_check_save_CFLAGS}"
+   fi
+
+   # now check for the header.
+   if test "${AST_AMR_WB_ENCODER_FOUND}" = "yes"; then
+      AMR_WB_ENCODER_LIB="${pbxlibdir} -lvo-amrwbenc "
+      # if --with-AMR_WB_ENCODER=DIR has been specified, use it.
+      if test "x${AMR_WB_ENCODER_DIR}" != "x"; then
+         AMR_WB_ENCODER_INCLUDE="-I${AMR_WB_ENCODER_DIR}/include"
+      fi
+      AMR_WB_ENCODER_INCLUDE="${AMR_WB_ENCODER_INCLUDE} "
+      if test "xvo-amrwbenc/enc_if.h" = "x" ; then	# no header, assume found
+         AMR_WB_ENCODER_HEADER_FOUND="1"
+      else				# check for the header
+         ast_ext_lib_check_saved_CPPFLAGS="${CPPFLAGS}"
+         CPPFLAGS="${CPPFLAGS} ${AMR_WB_ENCODER_INCLUDE}"
+         ac_fn_c_check_header_mongrel "$LINENO" "vo-amrwbenc/enc_if.h" "ac_cv_header_vo_amrwbenc_enc_if_h" "$ac_includes_default"
+if test "x$ac_cv_header_vo_amrwbenc_enc_if_h" = xyes; then :
+  AMR_WB_ENCODER_HEADER_FOUND=1
+else
+  AMR_WB_ENCODER_HEADER_FOUND=0
+fi
+
+
+         CPPFLAGS="${ast_ext_lib_check_saved_CPPFLAGS}"
+      fi
+      if test "x${AMR_WB_ENCODER_HEADER_FOUND}" = "x0" ; then
+         AMR_WB_ENCODER_LIB=""
+         AMR_WB_ENCODER_INCLUDE=""
+      else
+         if test "x${pbxfuncname}" = "x" ; then		# only checking headers -> no library
+            AMR_WB_ENCODER_LIB=""
+         fi
+         PBX_AMR_WB_ENCODER=1
+         cat >>confdefs.h <<_ACEOF
+#define HAVE_AMR_WB_ENCODER 1
+_ACEOF
+
+      fi
+   fi
+fi
+
+
+
+
 if test "x${PBX_BFD}" != "x1" -a "${USE_BFD}" != "no"; then
    pbxlibdir=""
    # if --with-BFD=DIR has been specified, use it.
@@ -21177,8 +21609,8 @@ if test "${USE_ILBC}" != "no"; then
    if test "x${PBX_ILBC}" != "x1" -a "${USE_ILBC}" != "no"; then
 
 pkg_failed=no
-{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for ILBC" >&5
-$as_echo_n "checking for ILBC... " >&6; }
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for libilbc" >&5
+$as_echo_n "checking for libilbc... " >&6; }
 
 if test -n "$ILBC_CFLAGS"; then
     pkg_cv_ILBC_CFLAGS="$ILBC_CFLAGS"
@@ -21218,7 +21650,7 @@ fi
 
 
 if test $pkg_failed = yes; then
-   	{ $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+        { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
 $as_echo "no" >&6; }
 
 if $PKG_CONFIG --atleast-pkgconfig-version 0.20; then
@@ -21239,7 +21671,7 @@ fi
 
 
 elif test $pkg_failed = untried; then
-     	{ $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+        { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
 $as_echo "no" >&6; }
 
             PBX_ILBC=0
@@ -21284,8 +21716,8 @@ if test "${USE_LIBEDIT}" != "no"; then
    if test "x${PBX_LIBEDIT}" != "x1" -a "${USE_LIBEDIT}" != "no"; then
 
 pkg_failed=no
-{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for LIBEDIT" >&5
-$as_echo_n "checking for LIBEDIT... " >&6; }
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for libedit" >&5
+$as_echo_n "checking for libedit... " >&6; }
 
 if test -n "$LIBEDIT_CFLAGS"; then
     pkg_cv_LIBEDIT_CFLAGS="$LIBEDIT_CFLAGS"
@@ -21325,7 +21757,7 @@ fi
 
 
 if test $pkg_failed = yes; then
-   	{ $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+        { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
 $as_echo "no" >&6; }
 
 if $PKG_CONFIG --atleast-pkgconfig-version 0.20; then
@@ -21346,7 +21778,7 @@ fi
 
 
 elif test $pkg_failed = untried; then
-     	{ $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+        { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
 $as_echo "no" >&6; }
 
             PBX_LIBEDIT=0
@@ -25791,8 +26223,8 @@ if test "$USE_PJPROJECT" != "no" ; then
    if test "x${PBX_PJPROJECT}" != "x1" -a "${USE_PJPROJECT}" != "no"; then
 
 pkg_failed=no
-{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for PJPROJECT" >&5
-$as_echo_n "checking for PJPROJECT... " >&6; }
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for libpjproject" >&5
+$as_echo_n "checking for libpjproject... " >&6; }
 
 if test -n "$PJPROJECT_CFLAGS"; then
     pkg_cv_PJPROJECT_CFLAGS="$PJPROJECT_CFLAGS"
@@ -25832,7 +26264,7 @@ fi
 
 
 if test $pkg_failed = yes; then
-   	{ $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+        { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
 $as_echo "no" >&6; }
 
 if $PKG_CONFIG --atleast-pkgconfig-version 0.20; then
@@ -25853,7 +26285,7 @@ fi
 
 
 elif test $pkg_failed = untried; then
-     	{ $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+        { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
 $as_echo "no" >&6; }
 
             PBX_PJPROJECT=0
@@ -27031,8 +27463,8 @@ fi
    if test "x${PBX_PYTHONDEV}" != "x1" -a "${USE_PYTHONDEV}" != "no"; then
 
 pkg_failed=no
-{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for PYTHONDEV" >&5
-$as_echo_n "checking for PYTHONDEV... " >&6; }
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for python" >&5
+$as_echo_n "checking for python... " >&6; }
 
 if test -n "$PYTHONDEV_CFLAGS"; then
     pkg_cv_PYTHONDEV_CFLAGS="$PYTHONDEV_CFLAGS"
@@ -27072,7 +27504,7 @@ fi
 
 
 if test $pkg_failed = yes; then
-   	{ $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+        { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
 $as_echo "no" >&6; }
 
 if $PKG_CONFIG --atleast-pkgconfig-version 0.20; then
@@ -27093,7 +27525,7 @@ fi
 
 
 elif test $pkg_failed = untried; then
-     	{ $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+        { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
 $as_echo "no" >&6; }
 
             PBX_PYTHONDEV=0
@@ -34618,8 +35050,8 @@ for ver in 2.0 2.2 2.4 2.6 3.0; do
    if test "x${PBX_GMIME}" != "x1" -a "${USE_GMIME}" != "no"; then
 
 pkg_failed=no
-{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for GMIME" >&5
-$as_echo_n "checking for GMIME... " >&6; }
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for gmime-$ver" >&5
+$as_echo_n "checking for gmime-$ver... " >&6; }
 
 if test -n "$GMIME_CFLAGS"; then
     pkg_cv_GMIME_CFLAGS="$GMIME_CFLAGS"
@@ -34659,7 +35091,7 @@ fi
 
 
 if test $pkg_failed = yes; then
-   	{ $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+        { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
 $as_echo "no" >&6; }
 
 if $PKG_CONFIG --atleast-pkgconfig-version 0.20; then
@@ -34680,7 +35112,7 @@ fi
 
 
 elif test $pkg_failed = untried; then
-     	{ $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+        { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
 $as_echo "no" >&6; }
 
             PBX_GMIME=0
@@ -36273,8 +36705,8 @@ fi
    if test "x${PBX_GTK2}" != "x1" -a "${USE_GTK2}" != "no"; then
 
 pkg_failed=no
-{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for GTK2" >&5
-$as_echo_n "checking for GTK2... " >&6; }
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for gtk+-2.0" >&5
+$as_echo_n "checking for gtk+-2.0... " >&6; }
 
 if test -n "$GTK2_CFLAGS"; then
     pkg_cv_GTK2_CFLAGS="$GTK2_CFLAGS"
@@ -36314,7 +36746,7 @@ fi
 
 
 if test $pkg_failed = yes; then
-   	{ $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+        { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
 $as_echo "no" >&6; }
 
 if $PKG_CONFIG --atleast-pkgconfig-version 0.20; then
@@ -36335,7 +36767,7 @@ fi
 
 
 elif test $pkg_failed = untried; then
-     	{ $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+        { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
 $as_echo "no" >&6; }
 
             PBX_GTK2=0
@@ -36384,8 +36816,8 @@ fi
    if test "x${PBX_SYSTEMD}" != "x1" -a "${USE_SYSTEMD}" != "no"; then
 
 pkg_failed=no
-{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for SYSTEMD" >&5
-$as_echo_n "checking for SYSTEMD... " >&6; }
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for libsystemd" >&5
+$as_echo_n "checking for libsystemd... " >&6; }
 
 if test -n "$SYSTEMD_CFLAGS"; then
     pkg_cv_SYSTEMD_CFLAGS="$SYSTEMD_CFLAGS"
@@ -36425,7 +36857,7 @@ fi
 
 
 if test $pkg_failed = yes; then
-   	{ $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+        { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
 $as_echo "no" >&6; }
 
 if $PKG_CONFIG --atleast-pkgconfig-version 0.20; then
@@ -36446,7 +36878,7 @@ fi
 
 
 elif test $pkg_failed = untried; then
-     	{ $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+        { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
 $as_echo "no" >&6; }
 
             PBX_SYSTEMD=0
