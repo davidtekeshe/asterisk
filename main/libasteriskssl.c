@@ -31,10 +31,12 @@
 
 #include "asterisk/_private.h" /* ast_ssl_init() */
 
+/*
 #ifdef HAVE_OPENSSL
 #include <openssl/ssl.h>
 #include <openssl/err.h>
 #endif
+*/
 
 #if defined(HAVE_OPENSSL) && \
 	!defined(OPENSSL_VERSION_NUMBER) || OPENSSL_VERSION_NUMBER < 0x10100000L || defined(LIBRESSL_VERSION_NUMBER)
